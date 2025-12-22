@@ -28,7 +28,8 @@ public class ProductDAO implements ProductDataAccess {
     public ProductDAO(ProductRepository repo, ProductConverter converter) {
         this.repo = repo;
         this.converter = converter;
-        this.imagesPath = "C:/Documents/Programation/bookStore/BookStore-main/images";
+        this.imagesPath = Paths.get("images").toAbsolutePath().toString();
+
     }
 
     @Override
