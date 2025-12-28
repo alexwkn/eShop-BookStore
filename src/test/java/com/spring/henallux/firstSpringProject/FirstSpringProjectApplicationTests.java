@@ -9,5 +9,4 @@ class FirstSpringProjectApplicationTests {
 	@Test
 	void contextLoads() {
 	}
-
 }
