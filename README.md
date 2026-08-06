@@ -28,7 +28,7 @@ docker compose up -d
 Puis lancez l'application avec le fichier FirstSpringProjectApplication.java
 
 ## Création du fichier keystore.p12 
-Pour créer le fichier keystore.p12 pour rendre votre site en https, entrer dans le terminal : 
+Pour donner à votre site, un accès HTTPS, entrer dans le terminal la ligne suivante : 
 ```bash
 keytool -genkeypair -alias bookstore -keyalg RSA -keysize 4096 -validity 3650 -dname "CN=localhost" -keypass ${SSL_KEYSTORE_PASSWORD} -keystore src/main/resources/keystore.p12 -storetype PKCS12 -storepass ${SSL_KEYSTORE_PASSWORD}
 ```
