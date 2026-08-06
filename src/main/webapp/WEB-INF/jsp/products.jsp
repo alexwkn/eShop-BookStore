@@ -29,18 +29,18 @@
                     <a href="${ctx}/products/${p.id}"
                        class="product-card text-decoration-none text-dark js-open-product"
                        data-id="${p.id}"
-                       data-name="${p.name}"
-                       data-author="${p.author}"
+                       data-name="${fn:escapeXml(p.name)}"
+                       data-author="${fn:escapeXml(p.author)}"
                        data-desc="${fn:escapeXml(p.description)}"
                        data-price="${p.price}"
                        data-img="${ctx}/products/${p.id}/image">
                         <div class="card shadow-sm mb-4">
                             <img class="card-img-top"
                                  src="${ctx}/products/${p.id}/image"
-                                 alt="${p.name}"
+                                 alt="${fn:escapeXml(p.name)}"
                                  onerror="this.style.display='none'"/>
                             <div class="card-body d-flex flex-column">
-                                <h5 class="card-title mb-1">${p.name}</h5>
+                                <h5 class="card-title mb-1"><c:out value="${p.name}"/></h5>
                                 <p class="card-text text-muted small mb-3">
                                     <c:out value="${p.author}"/>
                                 </p>
@@ -49,7 +49,7 @@
                                     <c:out value="${p.description}"/>
                                 </p>
                                 <div class="mt-auto d-flex justify-content-between align-items-center">
-                                    <span class="fw-bold">${p.price} €</span>
+                                    <span class="fw-bold"><fmt:formatNumber value="${p.price}" type="number" minFractionDigits="2" maxFractionDigits="2"/> €</span>
                                 </div>
                             </div>
                         </div>
@@ -112,6 +112,7 @@
 
             <div class="modal-footer">
                 <form id="pm-add-form" method="post" action="">
+                <sec:csrfInput/>
                     <div class="d-flex align-items-center gap-2">
                         <label for="quantity" class="form-label mb-0"><spring:message code="products.quantity"/> :</label>
                         <input type="number"

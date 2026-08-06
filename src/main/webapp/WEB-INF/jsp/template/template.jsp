@@ -41,7 +41,7 @@
                     <li class="list-group-item d-flex justify-content-between align-items-center">
                         <div class="d-flex align-items-center gap-2">
                             <img src="${ctx}/products/${item.product.id}/image"
-                                 alt="${item.product.name}"
+                                 alt="${fn:escapeXml(item.product.name)}"
                                  style="width:50px;height:50px;object-fit:cover;"
                                  onerror="this.src='https://placehold.jp/50x50.png';">
 
@@ -49,6 +49,9 @@
                                 <div class="fw-semibold"><c:out value="${item.product.name}"/></div>
                                 <form action="${ctx}/cart/update/${item.product.id}" method="post"
                                       class="d-flex align-items-center gap-2 auto-submit-form">
+
+                                      <sec:csrfInput/>
+
                                     <input type="number"
                                            name="quantity"
                                            value="${item.quantity}"
@@ -69,6 +72,7 @@
                                    minFractionDigits="2"/>
             </span>
                             <form action="${ctx}/cart/remove/${item.product.id}" method="post" class="mt-1">
+                            <sec:csrfInput/>
                                 <button type="submit" class="btn btn-sm btn-outline-danger"
                                         title="<spring:message code="cart.removeItem"/>">
                                     <i class="bi bi-trash"></i>
@@ -178,7 +182,7 @@
                     <li class="nav-item">
                 <span class="nav-link d-flex align-items-center gap-1">
                   <i class="bi bi-person-circle"></i>
-                  <span class="d-md-inline d-none"><spring:message code="navbar.welcomeMessage"/> ${username}</span>
+                  <span class="d-md-inline d-none"><spring:message code="navbar.welcomeMessage"/> <c:out value="${username}"/></span>
                 </span>
                     </li>
 
@@ -190,11 +194,19 @@
                     </li>
 
                     <li class="nav-item">
-                        <a class="nav-link d-flex align-items-center gap-1" href="<spring:url value="/logout"/>">
-                            <i class="bi bi-box-arrow-right"></i>
-                            <span class="d-md-inline d-none"><spring:message code="navbar.logout"/></span>
-                        </a>
+                        <form method="post" action="<spring:url value='/logout'/>" class="m-0">
+                            <sec:csrfInput/>
+
+                            <button type="submit" class="nav-link border-0 bg-transparent d-flex align-items-center gap-1">
+                                <i class="bi bi-box-arrow-right"></i>
+
+                                <span class="d-md-inline d-none">
+                                    <spring:message code="navbar.logout"/>
+                                </span>
+                            </button>
+                        </form>
                     </li>
+
                 </sec:authorize>
 
                 <sec:authorize access="hasRole('ADMIN')">

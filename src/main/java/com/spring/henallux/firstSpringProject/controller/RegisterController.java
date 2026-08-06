@@ -1,6 +1,7 @@
 package com.spring.henallux.firstSpringProject.controller;
 
 import com.spring.henallux.firstSpringProject.model.User;
+import com.spring.henallux.firstSpringProject.service.InputSanitizerService;
 import com.spring.henallux.firstSpringProject.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
@@ -21,11 +22,13 @@ public class RegisterController {
     private final UserService userService;
 
     private final MessageSource messageSource;
+    private final InputSanitizerService inputSanitizerService;
 
     @Autowired
-    public RegisterController(UserService userService, MessageSource messageSource) {
+    public RegisterController(UserService userService, MessageSource messageSource, InputSanitizerService inputSanitizerService) {
         this.userService = userService;
         this.messageSource = messageSource;
+        this.inputSanitizerService = inputSanitizerService;
     }
 
     @RequestMapping(method = RequestMethod.GET )
@@ -38,6 +41,14 @@ public class RegisterController {
 
     @RequestMapping(method = RequestMethod.POST)
     public String register(@Valid @ModelAttribute("user") User user, BindingResult errors, Model model) {
+
+        String originalUsername = user.getUsername();
+        String sanitizedUsername = inputSanitizerService.sanitizePlainText(originalUsername);
+
+        if (originalUsername != null && !originalUsername.equals(sanitizedUsername)) {
+            errors.rejectValue("username", "security.username.unsafe", "Le nom d'utilisateur contient du contenu interdit");
+        }
+
         if (errors.hasErrors()) {
             return "integrated:register";
         }

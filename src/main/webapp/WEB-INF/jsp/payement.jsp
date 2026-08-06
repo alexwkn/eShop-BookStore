@@ -104,6 +104,7 @@
     <div class="mt-3">
         <h3 class="m-0 mb-3" style="font-size:1.1rem;color:#222;">${codeLabel}</h3>
         <form method="post" action="${applyCouponUrl}" class="inline-form" style="display:flex;gap:8px;">
+        <sec:csrfInput/>
             <input type="hidden" name="orderId" value="${orderId}"/>
             <input type="text" name="code" class="form-input" maxlength="50"
                    placeholder="${enterCodePlaceholder}"

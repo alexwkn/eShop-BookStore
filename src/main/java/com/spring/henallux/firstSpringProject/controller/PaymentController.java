@@ -1,13 +1,19 @@
 package com.spring.henallux.firstSpringProject.controller;
 
 import com.spring.henallux.firstSpringProject.dataAccess.dao.DiscountDataAccess;
+import com.spring.henallux.firstSpringProject.dataAccess.entity.UserEntity;
 import com.spring.henallux.firstSpringProject.dataAccess.repository.OrderRepository;
+import com.spring.henallux.firstSpringProject.dataAccess.repository.UserRepository;
 import com.spring.henallux.firstSpringProject.model.Discount;
+import com.spring.henallux.firstSpringProject.model.User;
 import com.spring.henallux.firstSpringProject.service.CartService;
 import org.springframework.context.MessageSource;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import com.spring.henallux.firstSpringProject.dataAccess.entity.OrderEntity;
 
@@ -28,24 +34,60 @@ public class PaymentController {
 
 
     private final OrderRepository orderRepository;
+    private final UserRepository userRepository;
+
     private static final String PAYPAL_URL = "https://www.sandbox.paypal.com/cgi-bin/webscr";
     private static final String BUSINESS = "sb-qmx1j48304475@business.example.com";
     private static final String CLIENT_ID = "Af39HyotBOs9cX7U8kRDy9MW5JoyeBZquz4fzzjzVD5VAOyfCZCXRuG-pRHIkQHK4lbjlDYvtqYWcard";
-    private static final String RETURN_URL = "http://localhost:8082/bookstore/payement/success";
-    private static final String CANCEL_URL = "http://localhost:8082/bookstore/payement/failed";
+    private static final String RETURN_URL = "https://localhost:8082/bookstore/payement/success";
+    private static final String CANCEL_URL = "https://localhost:8082/bookstore/payement/failed";
     private static final String CURRENCY = "EUR";
 
     private static final String SESSION_COUPON = "appliedCoupon";
 
-    public PaymentController(CartService cartService, DiscountDataAccess discountDao, MessageSource messageSource, OrderRepository orderRepository) {
+    public PaymentController(CartService cartService, DiscountDataAccess discountDao, MessageSource messageSource, OrderRepository orderRepository, UserRepository userRepository) {
         this.cartService = cartService;
         this.discountDao = discountDao;
         this.messageSource = messageSource;
         this.orderRepository = orderRepository;
+        this.userRepository = userRepository;
+    }
+
+    private OrderEntity getOwnedOrder(Integer orderId, User principal) {
+
+        if (principal == null) {
+            throw new ResponseStatusException(
+                    HttpStatus.UNAUTHORIZED,
+                    "Utilisateur non authentifié"
+            );
+        }
+
+        UserEntity currentUser =
+                userRepository.findByEmail(principal.getEmail());
+
+        if (currentUser == null) {
+            throw new ResponseStatusException(
+                    HttpStatus.UNAUTHORIZED,
+                    "Utilisateur introuvable"
+            );
+        }
+
+        return orderRepository
+                .findByOrderIdAndUserId(
+                        orderId,
+                        currentUser.getId()
+                )
+                .orElseThrow(() ->
+                        new ResponseStatusException(
+                                HttpStatus.NOT_FOUND,
+                                "Commande introuvable"
+                        )
+                );
     }
 
     @GetMapping("/{orderId}")
-    public String paymentForm(Model model, @PathVariable("orderId") Integer orderId, HttpSession session) {
+    public String paymentForm(Model model, @PathVariable("orderId") Integer orderId, HttpSession session, @AuthenticationPrincipal User principal) {
+        getOwnedOrder(orderId, principal);
 
         model.addAttribute("paypalUrl", PAYPAL_URL);
         model.addAttribute("business", BUSINESS);
@@ -95,12 +137,9 @@ public class PaymentController {
 
     @GetMapping("/success/{orderId}")
     @Transactional
-    public String paymentSuccess(@PathVariable("orderId") Integer orderId) {
+    public String paymentSuccess(@PathVariable("orderId") Integer orderId, @AuthenticationPrincipal User principal) {
 
-        OrderEntity order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new IllegalStateException("Order not found"));
-
-
+        OrderEntity order = getOwnedOrder(orderId, principal);
         order.setPaid(true);
         orderRepository.save(order);
 
@@ -118,8 +157,10 @@ public class PaymentController {
                               @RequestParam("orderId") Integer orderId,
                               HttpSession session,
                               RedirectAttributes ra,
-                              Locale locale) {
+                              Locale locale,  @AuthenticationPrincipal User principal) {
         String code = (rawCode == null) ? "" : rawCode.trim();
+
+        getOwnedOrder(orderId, principal);
 
         if (code.isEmpty()) {
             ra.addFlashAttribute("error", messageSource.getMessage("coupon.error.empty", null, locale));

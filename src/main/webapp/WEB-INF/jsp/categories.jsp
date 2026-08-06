@@ -7,7 +7,7 @@
 <body>
 <ul>
     <c:forEach var="c" items="${categories}">
-        <li>${c.name} (id: ${c.id})</li>
+        <li><c:out value="${c.name}"/> (id: <c:out value="${c.id}"/>)</li>
     </c:forEach>
 </ul>
 

@@ -25,7 +25,7 @@
 
     <div class="form-field">
       <form:label path="username">${updateUsername}</form:label>
-      <form:input path="username" id="username" cssClass="form-input"/>
+      <form:input path="username" id="username" cssClass="form-input" htmlEscape="true"/>
       <spring:bind path="userUpdate.username">
         <c:if test="${status.error}">
           <div class="form-alert form-alert-error">${status.errorMessages[0]}</div>

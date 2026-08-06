@@ -26,10 +26,10 @@
 
     <div class="form-field">
       <form:label path="username">${registerUsername}</form:label>
-      <form:input path="username" id="username" cssClass="form-input"/>
+      <form:input path="username" id="username" cssClass="form-input" htmlEscape="true"/>
       <spring:bind path="user.username">
         <c:if test="${status.error}">
-          <div class="form-alert form-alert-error">${status.errorMessages[0]}</div>
+          <div class="form-alert form-alert-error"><c:out value="${status.errorMessages[0]}"/></div>
         </c:if>
       </spring:bind>
     </div>
