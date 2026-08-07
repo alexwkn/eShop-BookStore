@@ -9,9 +9,7 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler;
-
-import static org.springframework.security.web.server.header.ContentSecurityPolicyServerHttpHeadersWriter.CONTENT_SECURITY_POLICY;
-
+import org.springframework.security.web.header.writers.StaticHeadersWriter;
 
 @Configuration
 @EnableWebSecurity
@@ -23,20 +21,68 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
     };
     private static final String[] AUTHORIZED_REQUESTS_ADMIN = new String[]{"/admin/**"};
 
+    private static final String CONTENT_SECURITY_POLICY =
+            "default-src 'self'; " +
+                    "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; " +
+                    "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; " +
+                    "font-src 'self' data: https://cdn.jsdelivr.net; " +
+                    "img-src 'self' data: https://placehold.jp; " +
+                    "connect-src 'self'; " +
+                    "form-action 'self' https://www.sandbox.paypal.com; " +
+                    "frame-ancestors 'none'; " +
+                    "base-uri 'self'; " +
+                    "object-src 'none'";
+
     private UserDetailsService userDetailsServiceImpl;
 
     @Autowired
     public WebSecurityConfiguration(UserDetailsService userDetailsServiceImplementation) {
         this.userDetailsServiceImpl = userDetailsServiceImplementation;
     }
-
-
     /**
      * We do the configuration of spring security here.
      */
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
+
+        // Content Security Policy : Reduce the potential for XSS Injection
+        http.headers()
+                .contentSecurityPolicy(contentSecurityPolicy ->
+                        contentSecurityPolicy.policyDirectives(
+                                CONTENT_SECURITY_POLICY
+                        )
+                );
+
+        // Referrer Policy : Avoid revealing the full URL to external sites
+        http.headers()
+                .addHeaderWriter(
+                        new StaticHeadersWriter(
+                                "Referrer-Policy",
+                                "strict-origin-when-cross-origin"
+                        )
+                );
+
+        // Permissions Policy : Interdit caméra, microphone et géolocalisation
+        http.headers()
+                .addHeaderWriter(
+                        new StaticHeadersWriter(
+                                "Permissions-Policy",
+                                "geolocation=(), camera=(), microphone=()"
+                        )
+                );
+
+        // Protection against clickjacking
+        http.headers()
+                .frameOptions()
+                .deny();
+
+        // Force the browser to continue using HTTPS
+        http.headers()
+                .httpStrictTransportSecurity()
+                .includeSubDomains(false)
+                .maxAgeInSeconds(31536000);
+
         http
                 .authorizeRequests() // We define the authorization here
                 .antMatchers(AUTHORIZED_REQUESTS_ADMIN).hasRole("ADMIN") // For the request to "/admin", the user needs to be an admin
@@ -61,10 +107,6 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
                 .deleteCookies("JSESSIONID") // Remove the session cookie from the client
                 .permitAll(); // To make the logout available for any user
     }
-
-
-
-
 
     @Autowired
     public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {

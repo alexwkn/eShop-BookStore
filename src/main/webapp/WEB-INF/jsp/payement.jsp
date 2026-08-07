@@ -28,11 +28,11 @@
 
     <c:if test="${not empty success}">
         <div class="form-alert" style="background:#eaf9f0;color:#106b35;border:1px solid #c9efd7;">
-                ${success}
+                <c:out value="${success}"/>
         </div>
     </c:if>
     <c:if test="${not empty error}">
-        <div class="form-alert form-alert-error">${error}</div>
+        <div class="form-alert form-alert-error"><c:out value="${error}"/></div>
     </c:if>
 
     <h3 class="m-0 mb-3" style="font-size:1.1rem;color:#222;">${summaryTitle}</h3>
@@ -108,7 +108,7 @@
             <input type="hidden" name="orderId" value="${orderId}"/>
             <input type="text" name="code" class="form-input" maxlength="50"
                    placeholder="${enterCodePlaceholder}"
-                   value="${appliedCode != null ? appliedCode : ''}" style="flex:1;">
+                   value="${fn:escapeXml(appliedCode != null ? appliedCode : '')}" style="flex:1;">
             <button type="submit" class="form-button btn-outline">${applyLabel}</button>
         </form>
     </div>
