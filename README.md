@@ -1,8 +1,10 @@
-## Configuration des variables d'environnement
+# Projet Book Store 
+
+## 1. ⚙️ Configuration des variables d'environnement
 
 Avant de lancer l'application, vous devez définir les variables d'environnement suivantes :
 
-A la racine du projet créez un fichier `.env` et ajoutez les lignes suivantes :
+À la racine du projet, créez un fichier `.env` et ajoutez les lignes suivantes :
 ```
 DB_USER=postgres
 DB_PASSWORD=monmotdepasse
@@ -12,30 +14,27 @@ DB_NAME=bookstore_db
 DB_URL=jdbc:postgresql://localhost:5432/bookstore_db
 ```
 
+## 2. Création du fichier keystore.p12 
+L'application utilise **HTTPS** . IL est donc nécessaire de générer un certificat local 
 
-# 📦 Base de données du projet avec  DOCKER et POSTGRESQL
-## 🚀 Lancement de la base de données avec Docker
+Depuis un terminal placé à la racine du projet, exécutez la commande suivante :
 
-
-```bash
-docker compose up -d
-```
-
-
-#Lancement du projet
-
-
-Puis lancez l'application avec le fichier FirstSpringProjectApplication.java
-
-## Création du fichier keystore.p12 
-Pour donner à votre site, un accès HTTPS, entrer dans le terminal la ligne suivante : 
 ```bash
 keytool -genkeypair -alias bookstore -keyalg RSA -keysize 4096 -validity 3650 -dname "CN=localhost" -keypass ${SSL_KEYSTORE_PASSWORD} -keystore src/main/resources/keystore.p12 -storetype PKCS12 -storepass ${SSL_KEYSTORE_PASSWORD}
 ```
 
+## 3.📦 Lancement de PotgreSQL avec Docker 
 
+Depuis un terminal placé à la racine du projet, exécutez :
+```bash
+docker compose up -d
+```
 
-## 🧪 Test du programme
+# 4. Lancement de l'application
+
+Puis lancez l'application avec le fichier FirstSpringProjectApplication.java
+
+## 5. 🧪 Test du programme
 rendez-vous sur le site web à l'adresse suivante :
 https://localhost:8082/bookstore/home
 
