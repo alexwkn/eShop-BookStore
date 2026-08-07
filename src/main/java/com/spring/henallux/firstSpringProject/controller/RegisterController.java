@@ -42,11 +42,16 @@ public class RegisterController {
     @RequestMapping(method = RequestMethod.POST)
     public String register(@Valid @ModelAttribute("user") User user, BindingResult errors, Model model) {
 
+        // XSS Protection :
         String originalUsername = user.getUsername();
         String sanitizedUsername = inputSanitizerService.sanitizePlainText(originalUsername);
 
         if (originalUsername != null && !originalUsername.equals(sanitizedUsername)) {
             errors.rejectValue("username", "security.username.unsafe", "Le nom d'utilisateur contient du contenu interdit");
+        }
+
+        if (user.getPassword() != null && user.getConfirmPassword() != null && !user.getPassword().equals(user.getConfirmPassword())) {
+            errors.rejectValue("confirmPassword", "password.mismatch", "Les mots de passe ne correspondent pas");
         }
 
         if (errors.hasErrors()) {

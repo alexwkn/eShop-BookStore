@@ -19,8 +19,19 @@ public class User implements UserDetails {
     private String username;
 
     @NotBlank
-    @Size(min = 8, max = 255)
+    @Size(max = 100)
+    private String firstName;
+
+    @NotBlank
+    @Size(max = 100)
+    private String lastName;
+
+    @NotBlank
+    @Size(min = 15, max = 255)
     private String password;
+
+    @NotBlank
+    private String confirmPassword;
 
     @NotBlank
     @Email
@@ -45,6 +56,8 @@ public class User implements UserDetails {
 
     public User(Integer id,
                 String username,
+                String firstName,
+                String lastName,
                 String password,
                 String email,
                 String address,
@@ -56,6 +69,8 @@ public class User implements UserDetails {
                 String phoneNumber) {
         this.id = id;
         this.username = username;
+        this.firstName = firstName;
+        this.lastName = lastName;
         this.password = password;
         this.email = email;
         this.address = address;
@@ -106,6 +121,14 @@ public class User implements UserDetails {
     public void setUsername(String username) { this.username = username; }
 
     public void setPassword(String password) { this.password = password; }
+
+    public String getFirstName() { return firstName; }
+    public void setFirstName(String firstName) { this.firstName = firstName; }
+    public String getLastName() { return lastName; }
+    public void setLastName(String lastName) { this.lastName = lastName; }
+
+    public String getConfirmPassword() { return confirmPassword;}
+    public void setConfirmPassword(String confirmPassword) { this.confirmPassword = confirmPassword; }
 
     public String getEmail() { return email; }
     public void setEmail(String email) { this.email = email; }

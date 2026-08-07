@@ -27,6 +27,8 @@ CREATE TABLE discount (
 CREATE TABLE app_user (
                           id SERIAL PRIMARY KEY,
                           username VARCHAR(100) NOT NULL,
+                          first_name VARCHAR (100) NOT NULL,
+                          last_name VARCHAR (100) NOT NULL,
                           password VARCHAR(255) NOT NULL,
                           email VARCHAR(255) NOT NULL UNIQUE,
                           address TEXT,
@@ -82,8 +84,8 @@ CREATE TABLE translation (
                                  ON UPDATE CASCADE ON DELETE CASCADE
 );
 
-INSERT INTO app_user (id, username, password, email, address, authorities, non_expired, non_locked, credentials_non_expired, enabled, phone_number) VALUES
-(200,'admin','$2a$10$iecux.ngSTDfrmjdB.XmleLNiz6ATIycdlDg4ddbaUk0KVpMNOjaC','admin@admin.admin','','ROLE_ADMIN',true,true,true,true,'00000000000');
+INSERT INTO app_user (id, username, first_name, last_name, password, email, address, authorities, non_expired, non_locked, credentials_non_expired, enabled, phone_number) VALUES
+(200,'admin', 'admin', 'admin','$2a$10$iecux.ngSTDfrmjdB.XmleLNiz6ATIycdlDg4ddbaUk0KVpMNOjaC','admin@admin.admin',NULL,'ROLE_ADMIN',true,true,true,true,'00000000000');
 
 INSERT INTO category (id) VALUES (1),(2),(3);
 

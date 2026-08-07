@@ -6,8 +6,11 @@
 
 <spring:message var="registerTitle" code="register.title"/>
 <spring:message var="registerUsername" code="register.username"/>
+<spring:message var="registerFirstname" code="register.firstName"/>
+<spring:message var="registerLastname" code="register.lastName"/>
 <spring:message var="registerEmail" code="register.email"/>
 <spring:message var="registerPassword" code="register.password"/>
+<spring:message var="registerConfirmPassword" code="register.confirmPassword"/>
 <spring:message var="registerAddress" code="register.address"/>
 <spring:message var="registerPhone" code="register.phone"/>
 <spring:message var="registerSubmit" code="register.submit"/>
@@ -35,6 +38,18 @@
     </div>
 
     <div class="form-field">
+      <form:label path="firstName">${registerFirstname}</form:label>
+      <form:input path="firstName" cssClass="form-input" htmlEscape="true"/>
+      <form:errors path="firstName" cssClass="form-alert form-alert-error"/>
+    </div>
+
+    <div class="form-field">
+      <form:label path="lastName">${registerLastname}</form:label>
+      <form:input path="lastName" cssClass="form-input" htmlEscape="true"/>
+      <form:errors path="lastName" cssClass="form-alert form-alert-error"/>
+    </div>
+
+    <div class="form-field">
       <form:label path="email">${registerEmail}</form:label>
       <form:input path="email" id="email" type="email" cssClass="form-input"/>
       <spring:bind path="user.email">
@@ -48,6 +63,16 @@
       <form:label path="password">${registerPassword}</form:label>
       <form:password path="password" id="password" cssClass="form-input"/>
       <spring:bind path="user.password">
+        <c:if test="${status.error}">
+          <div class="form-alert form-alert-error">${status.errorMessages[0]}</div>
+        </c:if>
+      </spring:bind>
+    </div>
+
+    <div class="form-field">
+      <form:label path="confirmPassword">${registerConfirmPassword}</form:label>
+      <form:password path="confirmPassword" id="password" cssClass="form-input"/>
+      <spring:bind path="user.confirmPassword">
         <c:if test="${status.error}">
           <div class="form-alert form-alert-error">${status.errorMessages[0]}</div>
         </c:if>

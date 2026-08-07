@@ -27,6 +27,11 @@ public class  UserService {
 
     @Transactional
     public void registerNewUser(User user) {
+
+        if (user.getAddress() != null && user.getAddress().trim().isEmpty()) {
+            user.setAddress(null);
+        }
+
         user.setPassword(encoder.encode(user.getPassword()));
         user.setAuthorities("ROLE_USER");
         userDataAccess.save(user);
