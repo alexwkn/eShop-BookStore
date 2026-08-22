@@ -25,6 +25,3 @@ pom.xml.*.backup
 ### Env / secrets ###
 .env
 
-# keystore.p12
-*.p12
-*.keystore

@@ -14,28 +14,19 @@ DB_NAME=bookstore_db
 DB_URL=jdbc:postgresql://localhost:5432/bookstore_db
 ```
 
-## 2. Création du fichier keystore.p12 
-L'application utilise **HTTPS** . IL est donc nécessaire de générer un certificat local 
-
-Depuis un terminal placé à la racine du projet, exécutez la commande suivante :
-
-```bash
-keytool -genkeypair -alias bookstore -keyalg RSA -keysize 4096 -validity 3650 -dname "CN=localhost" -keypass ${SSL_KEYSTORE_PASSWORD} -keystore src/main/resources/keystore.p12 -storetype PKCS12 -storepass ${SSL_KEYSTORE_PASSWORD}
-```
-
-## 3.📦 Lancement de PotgreSQL avec Docker 
+## 2.📦 Lancement de PotgreSQL avec Docker 
 
 Depuis un terminal placé à la racine du projet, exécutez :
 ```bash
 docker compose up -d
 ```
 
-# 4. Lancement de l'application
+# 3. Lancement de l'application
 
 Puis lancez l'application avec le fichier FirstSpringProjectApplication.java
 
-## 5. 🧪 Test du programme
-rendez-vous sur le site web à l'adresse suivante :
+## 4. 🧪 Test du programme
+Rendez-vous sur le site web à l'adresse suivante :
 https://localhost:8082/bookstore/home
 
 Une fois la bd lancé et le projet lancé, vous pouvez tester le programme en créant un compte ou en se connectant avec le compte administrateur suivant :
