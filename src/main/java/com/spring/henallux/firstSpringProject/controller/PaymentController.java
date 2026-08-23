@@ -8,6 +8,7 @@ import com.spring.henallux.firstSpringProject.dataAccess.repository.UserReposito
 import com.spring.henallux.firstSpringProject.model.Discount;
 import com.spring.henallux.firstSpringProject.model.User;
 import com.spring.henallux.firstSpringProject.service.CartService;
+import com.spring.henallux.firstSpringProject.service.PromotionService;
 import org.springframework.context.MessageSource;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -31,6 +32,7 @@ public class PaymentController {
 
     private final CartService cartService;
     private final DiscountDataAccess discountDao;
+    private final PromotionService promotionService;
     private final MessageSource messageSource;
 
 
@@ -47,9 +49,10 @@ public class PaymentController {
 
     private static final String SESSION_COUPON = "appliedCoupon";
 
-    public PaymentController(CartService cartService, DiscountDataAccess discountDao, MessageSource messageSource, OrderRepository orderRepository, OrderLineRepository orderLineRepository, UserRepository userRepository) {
+    public PaymentController(CartService cartService, DiscountDataAccess discountDao, PromotionService promotionService, MessageSource messageSource, OrderRepository orderRepository, OrderLineRepository orderLineRepository, UserRepository userRepository) {
         this.cartService = cartService;
         this.discountDao = discountDao;
+        this.promotionService = promotionService;
         this.messageSource = messageSource;
         this.orderRepository = orderRepository;
         this.orderLineRepository = orderLineRepository;
@@ -65,18 +68,9 @@ public class PaymentController {
                 .setScale(2, RoundingMode.HALF_UP);
 
         String appliedCode = (String) session.getAttribute(SESSION_COUPON);
-        if (appliedCode == null) {
-            return subtotal;
-        }
+        Discount discount = (appliedCode != null) ? discountDao.findByCode(appliedCode) : null;
 
-        Discount d = discountDao.findByCode(appliedCode);
-        if (d == null || !Boolean.TRUE.equals(d.isValid())) {
-            return subtotal;
-        }
-
-        BigDecimal discountAmount = subtotal.multiply(d.getDiscount())
-                .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
-        return subtotal.subtract(discountAmount).setScale(2, RoundingMode.HALF_UP);
+        return promotionService.applyDiscount(subtotal, discount);
     }
 
     private OrderEntity getOwnedOrder(Integer orderId, User principal) {
@@ -128,24 +122,16 @@ public class PaymentController {
         model.addAttribute("paymentCartItems", cartService.getItems());
 
         String appliedCode = (String) session.getAttribute(SESSION_COUPON);
-        BigDecimal discountRate = BigDecimal.ZERO;
-        BigDecimal discountAmount = BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP);
         BigDecimal finalTotal = total;
 
         if (appliedCode != null) {
             Discount d = discountDao.findByCode(appliedCode);
 
             if (d != null && Boolean.TRUE.equals(d.isValid())) {
-                discountRate = d.getDiscount();
+                BigDecimal discountAmount = promotionService.computeDiscountAmount(total, d);
+                finalTotal = promotionService.applyDiscount(total, d);
 
-                discountAmount = total.multiply(discountRate)
-                        .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP)
-                        .setScale(2, RoundingMode.HALF_UP);
-
-                finalTotal = total.subtract(discountAmount)
-                        .setScale(2, RoundingMode.HALF_UP);
-
-                model.addAttribute("discountRate", discountRate);
+                model.addAttribute("discountRate", d.getDiscount());
                 model.addAttribute("discountAmount", discountAmount);
             } else {
                 session.removeAttribute(SESSION_COUPON);
