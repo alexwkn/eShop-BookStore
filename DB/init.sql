@@ -3,12 +3,14 @@ SET client_encoding = 'UTF8';
 
 DROP TABLE IF EXISTS order_line CASCADE;
 DROP TABLE IF EXISTS app_order CASCADE;
+DROP TABLE IF EXISTS translation CASCADE;
 DROP TABLE IF EXISTS product CASCADE;
 DROP TABLE IF EXISTS authorities CASCADE;
 DROP TABLE IF EXISTS app_user CASCADE;
 DROP TABLE IF EXISTS discount CASCADE;
 DROP TABLE IF EXISTS category CASCADE;
 DROP TABLE IF EXISTS language CASCADE;
+DROP TABLE IF EXISTS product_translation CASCADE;
 
 
 CREATE TABLE language (
@@ -63,6 +65,7 @@ CREATE TABLE app_order (
                            order_id SERIAL PRIMARY KEY,
                            user_id INT,
                            is_paid BOOLEAN NOT NULL DEFAULT FALSE,
+                           total_price NUMERIC(10,2) NOT NULL DEFAULT 0,
                            CONSTRAINT fk_order_user FOREIGN KEY (user_id) REFERENCES app_user(id)
                                ON UPDATE CASCADE ON DELETE SET NULL
 );
@@ -79,15 +82,20 @@ CREATE TABLE order_line (
                                 ON UPDATE CASCADE ON DELETE RESTRICT
 );
 
+-- Table de traduction unique pour les catégories ET les produits.
+-- entity_type distingue à quoi se rapporte la ligne ('category' ou 'product').
+-- Pas de FK sur entity_id : elle référence category.id OU product.id selon entity_type,
+-- une seule FK n'est donc pas possible avec ce design "une seule table".
 CREATE TABLE translation (
                              language_id CHAR(5) NOT NULL,
-                             category_id INT NOT NULL,
+                             entity_type VARCHAR(20) NOT NULL,
+                             entity_id INT NOT NULL,
                              name VARCHAR(255) NOT NULL,
-                             PRIMARY KEY (language_id, category_id),
+                             description TEXT,
+                             PRIMARY KEY (language_id, entity_type, entity_id),
                              CONSTRAINT fk_translation_language FOREIGN KEY (language_id) REFERENCES language(language_id)
                                  ON UPDATE CASCADE ON DELETE CASCADE,
-                             CONSTRAINT fk_translation_category FOREIGN KEY (category_id) REFERENCES category(id)
-                                 ON UPDATE CASCADE ON DELETE CASCADE
+                             CONSTRAINT chk_translation_entity_type CHECK (entity_type IN ('category', 'product'))
 );
 
 INSERT INTO app_user (id, username, first_name, last_name, password, email, address, enabled, phone_number) VALUES
@@ -112,10 +120,24 @@ INSERT INTO product (id, name, price, description, category_id, author,image) VA
                                                                             (6, 'Les fourmis', 3.20, 'Livre en bon état.', 2,'Bernard Werber' ,'lesfourmis.jpg'),
                                                                             (7, 'Marque-page', 1.50, NULL, 3, NULL,'marquepage.jpg');
 
-INSERT INTO translation (language_id, category_id, name) VALUES
-                                                             ('en',1,'New books'),
-                                                             ('en',2,'Used books'),
-                                                             ('en',3,'Accessories'),
-                                                             ('fr',1,'Livres neufs'),
-                                                             ('fr',2,'Livres occasions'),
-                                                             ('fr',3,'Accessoires');
+INSERT INTO translation (language_id, entity_type, entity_id, name, description) VALUES
+                                                             ('en','category',1,'New books',NULL),
+                                                             ('en','category',2,'Used books',NULL),
+                                                             ('en','category',3,'Accessories',NULL),
+                                                             ('fr','category',1,'Livres neufs',NULL),
+                                                             ('fr','category',2,'Livres occasions',NULL),
+                                                             ('fr','category',3,'Accessoires',NULL),
+                                                             ('fr','product',1,'1984','Très bon livre.'),
+                                                             ('en','product',1,'1984','A great book.'),
+                                                             ('fr','product',2,'Germinal','Livre en bon état.'),
+                                                             ('en','product',2,'Germinal','Book in good condition.'),
+                                                             ('fr','product',3,'La peste','Livre qui fait réfléchir.'),
+                                                             ('en','product',3,'The Plague','A thought-provoking book.'),
+                                                             ('fr','product',4,'Lampe de lecture',NULL),
+                                                             ('en','product',4,'Reading lamp',NULL),
+                                                             ('fr','product',5,'Le meilleur des mondes','Livre neuf.'),
+                                                             ('en','product',5,'Brave New World','Brand new book.'),
+                                                             ('fr','product',6,'Les fourmis','Livre en bon état.'),
+                                                             ('en','product',6,'The Ants','Book in good condition.'),
+                                                             ('fr','product',7,'Marque-page',NULL),
+                                                             ('en','product',7,'Bookmark',NULL);

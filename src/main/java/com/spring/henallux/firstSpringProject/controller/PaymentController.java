@@ -2,6 +2,7 @@ package com.spring.henallux.firstSpringProject.controller;
 
 import com.spring.henallux.firstSpringProject.dataAccess.dao.DiscountDataAccess;
 import com.spring.henallux.firstSpringProject.dataAccess.entity.UserEntity;
+import com.spring.henallux.firstSpringProject.dataAccess.repository.OrderLineRepository;
 import com.spring.henallux.firstSpringProject.dataAccess.repository.OrderRepository;
 import com.spring.henallux.firstSpringProject.dataAccess.repository.UserRepository;
 import com.spring.henallux.firstSpringProject.model.Discount;
@@ -34,6 +35,7 @@ public class PaymentController {
 
 
     private final OrderRepository orderRepository;
+    private final OrderLineRepository orderLineRepository;
     private final UserRepository userRepository;
 
     private static final String PAYPAL_URL = "https://www.sandbox.paypal.com/cgi-bin/webscr";
@@ -45,12 +47,36 @@ public class PaymentController {
 
     private static final String SESSION_COUPON = "appliedCoupon";
 
-    public PaymentController(CartService cartService, DiscountDataAccess discountDao, MessageSource messageSource, OrderRepository orderRepository, UserRepository userRepository) {
+    public PaymentController(CartService cartService, DiscountDataAccess discountDao, MessageSource messageSource, OrderRepository orderRepository, OrderLineRepository orderLineRepository, UserRepository userRepository) {
         this.cartService = cartService;
         this.discountDao = discountDao;
         this.messageSource = messageSource;
         this.orderRepository = orderRepository;
+        this.orderLineRepository = orderLineRepository;
         this.userRepository = userRepository;
+    }
+
+    // Recalcule le prix réel à partir des lignes de commande enregistrées (pas du panier en session),
+    // en réappliquant le code promo actif pour cette session au moment du paiement.
+    private BigDecimal computeRealTotal(Integer orderId, HttpSession session) {
+        BigDecimal subtotal = orderLineRepository.findByIdOrderIdOrderByIdProductIdAsc(orderId).stream()
+                .map(line -> line.getPrice().multiply(BigDecimal.valueOf(line.getQuantity())))
+                .reduce(BigDecimal.ZERO, BigDecimal::add)
+                .setScale(2, RoundingMode.HALF_UP);
+
+        String appliedCode = (String) session.getAttribute(SESSION_COUPON);
+        if (appliedCode == null) {
+            return subtotal;
+        }
+
+        Discount d = discountDao.findByCode(appliedCode);
+        if (d == null || !Boolean.TRUE.equals(d.isValid())) {
+            return subtotal;
+        }
+
+        BigDecimal discountAmount = subtotal.multiply(d.getDiscount())
+                .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
+        return subtotal.subtract(discountAmount).setScale(2, RoundingMode.HALF_UP);
     }
 
     private OrderEntity getOwnedOrder(Integer orderId, User principal) {
@@ -137,12 +163,14 @@ public class PaymentController {
 
     @GetMapping("/success/{orderId}")
     @Transactional
-    public String paymentSuccess(@PathVariable("orderId") Integer orderId, @AuthenticationPrincipal User principal) {
+    public String paymentSuccess(@PathVariable("orderId") Integer orderId, HttpSession session, @AuthenticationPrincipal User principal) {
 
         OrderEntity order = getOwnedOrder(orderId, principal);
         order.setPaid(true);
+        order.setTotalPrice(computeRealTotal(orderId, session));
         orderRepository.save(order);
 
+        session.removeAttribute(SESSION_COUPON);
         cartService.clear();
         return "integrated:payment-success";
     }

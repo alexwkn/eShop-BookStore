@@ -29,7 +29,7 @@ public class UserEntity implements Serializable {
     @Column(name="email", nullable = false, unique = true, length = 255)
     private String email;
 
-    @Column(nullable = false, unique = false ,length= 255)
+    @Column(nullable = true, unique = false ,length= 255)
     private String address;
 
     @Column(name="enabled", nullable = false, columnDefinition = "BOOLEAN DEFAULT TRUE")

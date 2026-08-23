@@ -13,6 +13,8 @@ import java.util.stream.Collectors;
 @Transactional(Transactional.TxType.SUPPORTS)
 public class CategoryTranslationDAO implements CategoryTranslationDataAccess {
 
+    private static final String ENTITY_TYPE = "category";
+
     private final TranslationRepository translations;
 
     public CategoryTranslationDAO(TranslationRepository translations) {
@@ -22,8 +24,8 @@ public class CategoryTranslationDAO implements CategoryTranslationDataAccess {
     @Override
     public List<CategoryLabel> listCategoriesWithNames() {
         String languageId = LocaleContextHolder.getLocale().getLanguage();
-        return translations.findByIdLanguageId(languageId).stream()
-                .map(t -> new CategoryLabel(t.getId().getCategoryId(), t.getName()))
+        return translations.findByIdLanguageIdAndIdEntityType(languageId, ENTITY_TYPE).stream()
+                .map(t -> new CategoryLabel(t.getId().getEntityId(), t.getName()))
                 .collect(Collectors.toList());
     }
 }

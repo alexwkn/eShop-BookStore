@@ -25,7 +25,6 @@ public class UserDetailsServiceImplementation implements UserDetailsService {
         User user = userDAO.findByEmail(email);
 
         if (user == null) {
-            System.out.println("LOGIN - utilisateur introuvable");
             throw new UsernameNotFoundException(email + "not found");
         }
 

@@ -10,6 +10,5 @@ import java.util.List;
 @Repository
 public interface TranslationRepository extends JpaRepository<TranslationEntity, TranslationId> {
 
-
-    List<TranslationEntity> findByIdLanguageId(String languageId);
+    List<TranslationEntity> findByIdLanguageIdAndIdEntityType(String languageId, String entityType);
 }

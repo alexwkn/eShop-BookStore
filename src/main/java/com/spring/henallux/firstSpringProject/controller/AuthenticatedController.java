@@ -71,7 +71,6 @@ public class AuthenticatedController {
             }
         }
         if (br.hasErrors()) {
-            br.getAllErrors().forEach(error -> System.out.println("- " + error.getDefaultMessage()));
             return "integrated:authenticated";
         }
         String email = ((User) authentication.getPrincipal()).getEmail();

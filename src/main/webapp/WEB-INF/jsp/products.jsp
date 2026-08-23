@@ -26,6 +26,12 @@
         <c:otherwise>
             <div class="product-columns">
                 <c:forEach var="p" items="${products}">
+                    <c:set var="categoryName" value=""/>
+                    <c:forEach var="c" items="${categoriesNames}">
+                        <c:if test="${c.id == p.categoryId}">
+                            <c:set var="categoryName" value="${c.name}"/>
+                        </c:if>
+                    </c:forEach>
                     <a href="${ctx}/products/${p.id}"
                        class="product-card text-decoration-none text-dark js-open-product"
                        data-id="${p.id}"
@@ -33,6 +39,7 @@
                        data-author="${fn:escapeXml(p.author)}"
                        data-desc="${fn:escapeXml(p.description)}"
                        data-price="${p.price}"
+                       data-category="${fn:escapeXml(categoryName)}"
                        data-img="${ctx}/products/${p.id}/image">
                         <div class="card shadow-sm mb-4">
                             <img class="card-img-top"
@@ -100,6 +107,7 @@
                     </div>
                     <div class="col-md-12">
                         <h6 id="pm-author" class="text-secondary"></h6>
+                        <span id="pm-category" class="badge bg-secondary"></span>
                     </div>
                     <div class="col-md-7">
                         <p id="pm-desc" class="text-muted"></p>
@@ -151,9 +159,11 @@
                 const desc = a.dataset.desc || '';
                 const price = a.dataset.price || '';
                 const img = a.dataset.img || '';
+                const category = a.dataset.category || '';
 
                 document.getElementById('pm-title').textContent = name;
                 document.getElementById('pm-author').textContent = author;
+                document.getElementById('pm-category').textContent = category;
                 document.getElementById('pm-desc').textContent = desc;
                 document.getElementById('pm-price').textContent = price + ' €';
                 document.getElementById('pm-img').src = img;

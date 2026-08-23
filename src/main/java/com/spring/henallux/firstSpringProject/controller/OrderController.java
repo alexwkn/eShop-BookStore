@@ -21,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.math.BigDecimal;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -87,6 +88,13 @@ public class OrderController {
                 orderLineRepository.deleteByIdOrderIdAndIdProductId(order.getOrderId(), existingLine.getId().getProductId());
             }
         }
+
+        // Prix réel de la commande, calculé à partir des lignes enregistrées (pas du panier en session)
+        BigDecimal totalPrice = orderLineRepository.findByIdOrderIdOrderByIdProductIdAsc(order.getOrderId()).stream()
+                .map(line -> line.getPrice().multiply(BigDecimal.valueOf(line.getQuantity())))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        order.setTotalPrice(totalPrice);
+        orderRepository.save(order);
 
         return "redirect:/payement/"+ order.getOrderId();
     }
