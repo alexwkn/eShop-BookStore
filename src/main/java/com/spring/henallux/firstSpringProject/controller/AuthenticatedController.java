@@ -2,12 +2,11 @@ package com.spring.henallux.firstSpringProject.controller;
 
 import com.spring.henallux.firstSpringProject.model.User;
 import com.spring.henallux.firstSpringProject.model.UserUpdate;
-import com.spring.henallux.firstSpringProject.service.UserDetailsServiceImplementation;
+import com.spring.henallux.firstSpringProject.service.InputSanitizerService;
 import com.spring.henallux.firstSpringProject.service.UserService;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -25,11 +24,11 @@ import javax.validation.Valid;
 public class AuthenticatedController {
 
     private final UserService userService;
-    private final UserDetailsServiceImplementation userDetailsService;
+    private final InputSanitizerService inputSanitizerService;
 
-    public AuthenticatedController(UserService userService, UserDetailsServiceImplementation userDetailsService) {
-        this.userDetailsService = userDetailsService;
+    public AuthenticatedController(UserService userService, InputSanitizerService inputSanitizerService) {
         this.userService = userService;
+        this.inputSanitizerService = inputSanitizerService;
     }
 
     @RequestMapping(method = RequestMethod.GET)
@@ -48,6 +47,24 @@ public class AuthenticatedController {
                              BindingResult br,
                              Authentication authentication,
                              HttpServletRequest request) {
+        String originalUsername = form.getUsername();
+
+        if (originalUsername != null) {
+
+            String sanitizedUsername = inputSanitizerService.sanitizePlainText(originalUsername);
+
+            if (!originalUsername.equals(sanitizedUsername)) {
+
+                br.rejectValue(
+                        "username",
+                        "security.username.unsafe",
+                        "Le nom d'utilisateur contient du contenu interdit"
+                );
+            }
+        }
+
+
+
         if (form.getPassword() != null && !form.getPassword().isBlank()) {
             if (form.getConfirmPassword() == null || !form.getPassword().equals(form.getConfirmPassword())) {
                 br.rejectValue("confirmPassword", "password.mismatch", "Les mots de passe ne correspondent pas");

@@ -4,6 +4,7 @@ SET client_encoding = 'UTF8';
 DROP TABLE IF EXISTS order_line CASCADE;
 DROP TABLE IF EXISTS app_order CASCADE;
 DROP TABLE IF EXISTS product CASCADE;
+DROP TABLE IF EXISTS authorities CASCADE;
 DROP TABLE IF EXISTS app_user CASCADE;
 DROP TABLE IF EXISTS discount CASCADE;
 DROP TABLE IF EXISTS category CASCADE;
@@ -32,14 +33,19 @@ CREATE TABLE app_user (
                           password VARCHAR(255) NOT NULL,
                           email VARCHAR(255) NOT NULL UNIQUE,
                           address TEXT,
-                          authorities VARCHAR(255),
-                          non_expired BOOLEAN NOT NULL DEFAULT TRUE,
-                          non_locked BOOLEAN NOT NULL DEFAULT TRUE,
-                          credentials_non_expired BOOLEAN NOT NULL DEFAULT TRUE,
                           enabled BOOLEAN NOT NULL DEFAULT TRUE,
-                        phone_number VARCHAR(20),
+                          phone_number VARCHAR(20),
                           CHECK (char_length(username) >= 3)
     );
+
+CREATE TABLE authorities (
+    id SERIAL PRIMARY KEY,
+    user_id INT NOT NULL,
+    authority VARCHAR(100) NOT NULL,
+
+    CONSTRAINT authorities_fk FOREIGN KEY(user_id) REFERENCES app_user(id) ON UPDATE CASCADE ON DELETE CASCADE,
+    CONSTRAINT authorities_unique UNIQUE (user_id, authority)
+);
 
 CREATE TABLE product (
                          id SERIAL PRIMARY KEY,
@@ -84,8 +90,10 @@ CREATE TABLE translation (
                                  ON UPDATE CASCADE ON DELETE CASCADE
 );
 
-INSERT INTO app_user (id, username, first_name, last_name, password, email, address, authorities, non_expired, non_locked, credentials_non_expired, enabled, phone_number) VALUES
-(200,'admin', 'admin', 'admin','$2a$10$iecux.ngSTDfrmjdB.XmleLNiz6ATIycdlDg4ddbaUk0KVpMNOjaC','admin@admin.admin',NULL,'ROLE_ADMIN',true,true,true,true,'00000000000');
+INSERT INTO app_user (id, username, first_name, last_name, password, email, address, enabled, phone_number) VALUES
+(200,'admin', 'admin', 'admin','$2a$10$iecux.ngSTDfrmjdB.XmleLNiz6ATIycdlDg4ddbaUk0KVpMNOjaC','admin@admin.admin',NULL,true,'00000000000');
+
+INSERT INTO authorities(user_id, authority) VALUES('200', 'ROLE_ADMIN');
 
 INSERT INTO category (id) VALUES (1),(2),(3);
 

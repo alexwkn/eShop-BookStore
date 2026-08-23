@@ -54,7 +54,7 @@
       <form:input path="email" id="email" type="email" cssClass="form-input"/>
       <spring:bind path="user.email">
         <c:if test="${status.error}">
-          <div class="form-alert form-alert-error">${status.errorMessages[0]}</div>
+          <div class="form-alert form-alert-error"><c:out value="${status.errorMessages[0]}"/></div>
         </c:if>
       </spring:bind>
     </div>
@@ -64,17 +64,17 @@
       <form:password path="password" id="password" cssClass="form-input"/>
       <spring:bind path="user.password">
         <c:if test="${status.error}">
-          <div class="form-alert form-alert-error">${status.errorMessages[0]}</div>
+          <div class="form-alert form-alert-error"><c:out value="${status.errorMessages[0]}"/></div>
         </c:if>
       </spring:bind>
     </div>
 
     <div class="form-field">
       <form:label path="confirmPassword">${registerConfirmPassword}</form:label>
-      <form:password path="confirmPassword" id="password" cssClass="form-input"/>
+      <form:password path="confirmPassword" id="confirmPassword" cssClass="form-input"/>
       <spring:bind path="user.confirmPassword">
         <c:if test="${status.error}">
-          <div class="form-alert form-alert-error">${status.errorMessages[0]}</div>
+          <div class="form-alert form-alert-error"><c:out value="${status.errorMessages[0]}"/></div>
         </c:if>
       </spring:bind>
     </div>
@@ -84,7 +84,7 @@
       <form:textarea path="address" id="address" rows="3" cssClass="form-input"/>
       <spring:bind path="user.address">
         <c:if test="${status.error}">
-          <div class="form-alert form-alert-error">${status.errorMessages[0]}</div>
+          <div class="form-alert form-alert-error"><c:out value="${status.errorMessages[0]}"/></div>
         </c:if>
       </spring:bind>
     </div>
@@ -94,7 +94,7 @@
       <form:input path="phoneNumber" id="phone" type="tel" cssClass="form-input"/>
       <spring:bind path="user.phoneNumber">
         <c:if test="${status.error}">
-          <div class="form-alert form-alert-error">${status.errorMessages[0]}</div>
+          <div class="form-alert form-alert-error"><c:out value="${status.errorMessages[0]}"/></div>
         </c:if>
       </spring:bind>
     </div>

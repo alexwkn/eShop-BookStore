@@ -18,7 +18,7 @@
     </c:if>
 
     <form:form modelAttribute="user" method="POST" class="form">
-        <form:input path="username" placeholder="${loginEmail}" cssClass="form-input" />
+        <form:input path="email" placeholder="${loginEmail}" cssClass="form-input" />
         <form:password path="password" placeholder="${loginPassword}" cssClass="form-input" />
         <form:button type="submit" class="form-button">
             <spring:message code="login.submit"/>

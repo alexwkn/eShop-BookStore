@@ -39,6 +39,10 @@ public class AdminController {
                                   Model model,
                                   RedirectAttributes ra) {
 
+        if (form.getCode() != null) {
+            form.setCode(form.getCode().trim().toUpperCase());
+        }
+
         if (br.hasErrors()) {
             model.addAttribute("promoCodes", discountDao.findAll());
             return "integrated:admin";
@@ -62,6 +66,7 @@ public class AdminController {
     @PostMapping("/promo-codes/{code}/delete")
     public String deletePromoCode(@PathVariable("code") String code,
                                   RedirectAttributes ra) {
+
         if (!discountDao.existsByCode(code)) {
             ra.addFlashAttribute("errorCode", "admin.error.code.notfound");
             ra.addFlashAttribute("errorArgs", new Object[]{code});

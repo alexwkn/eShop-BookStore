@@ -1,19 +1,26 @@
 package com.spring.henallux.firstSpringProject.configuration;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import org.apache.tomcat.util.http.Rfc6265CookieProcessor;
+import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory;
+import org.springframework.boot.web.server.WebServerFactoryCustomizer;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.ProviderManager;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler;
 import org.springframework.security.web.header.writers.StaticHeadersWriter;
 
 @Configuration
 @EnableWebSecurity
-public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
+public class WebSecurityConfiguration {
 
     private static final String LOGIN_REQUEST = "/login";
     private static final String[] AUTHORIZED_REQUESTS_ANYBODY = new String[]{
@@ -33,83 +40,76 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
                     "base-uri 'self'; " +
                     "object-src 'none'";
 
-    private UserDetailsService userDetailsServiceImpl;
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
-    @Autowired
-    public WebSecurityConfiguration(UserDetailsService userDetailsServiceImplementation) {
-        this.userDetailsServiceImpl = userDetailsServiceImplementation;
-    }
-    /**
-     * We do the configuration of spring security here.
-     */
+        http.csrf(Customizer.withDefaults()); // Default CSRF protection
 
-    @Override
-    protected void configure(HttpSecurity http) throws Exception {
+        http
+                .authorizeRequests()// We define the authorization here
+                // Accessible only to users with ROLE_ADMIN
+                .antMatchers(AUTHORIZED_REQUESTS_ADMIN).hasRole("ADMIN")
+                // Open to everyone
+                .antMatchers(AUTHORIZED_REQUESTS_ANYBODY).permitAll()
+                // All other pages require authentication
+                .anyRequest().authenticated()
 
-        // Content Security Policy : Reduce the potential for XSS Injection
-        http.headers()
-                .contentSecurityPolicy(contentSecurityPolicy ->
-                        contentSecurityPolicy.policyDirectives(
-                                CONTENT_SECURITY_POLICY
-                        )
-                );
+                .and()
 
-        // Referrer Policy : Avoid revealing the full URL to external sites
-        http.headers()
+                .formLogin()
+                .usernameParameter("email")
+                .successHandler(new SavedRequestAwareAuthenticationSuccessHandler())
+                .loginPage(LOGIN_REQUEST)
+                .permitAll()
+
+                .and()
+
+                .logout()
+                .logoutUrl("/logout")
+                .logoutSuccessUrl("/home")
+                .invalidateHttpSession(true)
+                .clearAuthentication(true)
+                .deleteCookies("JSESSIONID") // Remove the session cookie from the client
+                .permitAll();
+
+        http.headers(headers -> headers
+                // Reduce the potential for XSS Injection
+                .contentSecurityPolicy(csp -> csp.policyDirectives(CONTENT_SECURITY_POLICY))
+                // Avoid reveiling the full URL to external sites
                 .addHeaderWriter(
                         new StaticHeadersWriter(
                                 "Referrer-Policy",
                                 "strict-origin-when-cross-origin"
                         )
-                );
-
-        // Permissions Policy : Interdit caméra, microphone et géolocalisation
-        http.headers()
-                .addHeaderWriter(
-                        new StaticHeadersWriter(
-                                "Permissions-Policy",
-                                "geolocation=(), camera=(), microphone=()"
-                        )
-                );
-
-        // Protection against clickjacking
-        http.headers()
+                )
+                // Clickjacking protection
                 .frameOptions()
-                .deny();
+                .deny()
+        );
 
-        // Force the browser to continue using HTTPS
-        http.headers()
-                .httpStrictTransportSecurity()
-                .includeSubDomains(false)
-                .maxAgeInSeconds(31536000);
 
-        http
-                .authorizeRequests() // We define the authorization here
-                .antMatchers(AUTHORIZED_REQUESTS_ADMIN).hasRole("ADMIN") // For the request to "/admin", the user needs to be an admin
-                .antMatchers(AUTHORIZED_REQUESTS_ANYBODY).permitAll() // For the request to the index page, any user has access
-                .anyRequest().authenticated() // For all the other requests, the user needs to be authenticated
-
-                .and()
-
-                .formLogin() // We define the login part here.
-                .successHandler(new SavedRequestAwareAuthenticationSuccessHandler()) // provided by spring to redirect to the last request
-                .loginPage(LOGIN_REQUEST) // We specify a login page. Otherwise spring creates one by default
-                .permitAll() // To make the login page the available for any user
-                .defaultSuccessUrl("/home") // URL to return if login is successfull
-
-                .and()
-
-                .logout() // We define the logout part here - By default : URL = "/logout"
-                .logoutUrl("/logout") // Define the endpoint URL to trigger logout
-                .logoutSuccessUrl("/home")  // URL to return if logout is successfull
-                .invalidateHttpSession(true) // Invalidate the current HTTP session
-                .clearAuthentication(true) // Clear the security context authentication
-                .deleteCookies("JSESSIONID") // Remove the session cookie from the client
-                .permitAll(); // To make the logout available for any user
+        return http.build();
     }
 
-    @Autowired
-    public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
-        auth.userDetailsService(userDetailsServiceImpl).passwordEncoder(new BCryptPasswordEncoder());
+    @Bean
+    public AuthenticationManager authenticationManager(UserDetailsService userDetailsService, PasswordEncoder passwordEncoder) {
+        DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider();
+        authenticationProvider.setUserDetailsService(userDetailsService);
+        authenticationProvider.setPasswordEncoder(passwordEncoder);
+        return new ProviderManager(authenticationProvider);
+    }
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    public WebServerFactoryCustomizer<TomcatServletWebServerFactory> cookieProcessorCustomizer() {
+        return factory -> factory.addContextCustomizers(context -> {
+            Rfc6265CookieProcessor cookieProcessor = new Rfc6265CookieProcessor();
+            cookieProcessor.setSameSiteCookies("Lax"); // Lax / None / Strict
+            context.setCookieProcessor(cookieProcessor);
+        });
     }
 }

@@ -26,5 +26,10 @@ public class LoginController {
         model.addAttribute("pageTitle", translatedTitle);
         return "integrated:login";
     }
+
+    @GetMapping("/")
+    public String redirectToHome() {
+        return "redirect:/home";
+    }
 }
 

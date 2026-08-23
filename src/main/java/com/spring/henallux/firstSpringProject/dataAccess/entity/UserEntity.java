@@ -1,17 +1,20 @@
 package com.spring.henallux.firstSpringProject.dataAccess.entity;
 
 import javax.persistence.*;
+import java.io.Serializable;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "app_user")
-public class UserEntity {
+public class UserEntity implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     private Integer id;
 
-    @Column(nullable = false, length = 100)
+    @Column(name="username", nullable = false, length = 100)
     private String username;
 
     @Column(name="first_name",nullable = false, length = 100)
@@ -20,32 +23,23 @@ public class UserEntity {
     @Column(name="last_name", nullable = false, length = 100)
     private String lastName;
 
-    @Column(nullable = false, length = 255)
+    @Column(name="password", nullable = false, length = 255)
     private String password;
 
-    @Column(nullable = false, unique = true, length = 255)
+    @Column(name="email", nullable = false, unique = true, length = 255)
     private String email;
 
-    @Column(nullable = false,unique = false ,length= 255)
+    @Column(nullable = false, unique = false ,length= 255)
     private String address;
 
-    @Column(length = 255)
-    private String authorities;
-
-    @Column(name = "non_expired", nullable = false, columnDefinition = "BOOLEAN DEFAULT TRUE")
-    private boolean nonExpired = true;
-
-    @Column(name = "non_locked", nullable = false, columnDefinition = "BOOLEAN DEFAULT TRUE")
-    private boolean nonLocked = true;
-
-    @Column(name = "credentials_non_expired", nullable = false, columnDefinition = "BOOLEAN DEFAULT TRUE")
-    private boolean credentialsNonExpired = true;
-
-    @Column(nullable = false, columnDefinition = "BOOLEAN DEFAULT TRUE")
+    @Column(name="enabled", nullable = false, columnDefinition = "BOOLEAN DEFAULT TRUE")
     private boolean enabled = true;
 
     @Column(name = "phone_number", length = 20)
     private String phoneNumber;
+
+    @OneToMany(mappedBy = "userEntity", fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<AuthorityEntity> authorities = new HashSet<>();
 
     public UserEntity() {
     }
@@ -57,10 +51,6 @@ public class UserEntity {
                       String lastName,
                       String email,
                       String address,
-                      String authorities,
-                      boolean nonExpired,
-                      boolean nonLocked,
-                      boolean credentialsNonExpired,
                       boolean enabled,
                       String phoneNumber) {
         this.id = id;
@@ -70,10 +60,6 @@ public class UserEntity {
         this.lastName = lastName;
         this.email = email;
         this.address = address;
-        this.authorities = authorities;
-        this.nonExpired = nonExpired;
-        this.nonLocked = nonLocked;
-        this.credentialsNonExpired = credentialsNonExpired;
         this.enabled = enabled;
         this.phoneNumber = phoneNumber;
     }
@@ -95,9 +81,11 @@ public class UserEntity {
     }
 
     public String getFirstName() {return firstName;}
+
     public void setFirstName(String firstName) {this.firstName = firstName;}
 
     public String getLastName() {return lastName;}
+
     public void setLastName(String lastName) {this.lastName = lastName;}
 
     public String getPassword() {
@@ -124,38 +112,6 @@ public class UserEntity {
         this.address = address;
     }
 
-    public String getAuthorities() {
-        return authorities;
-    }
-
-    public void setAuthorities(String authorities) {
-        this.authorities = authorities;
-    }
-
-    public boolean getAccountNonExpired() {
-        return nonExpired;
-    }
-
-    public void setAccountNonExpired(boolean nonExpired) {
-        this.nonExpired = nonExpired;
-    }
-
-    public boolean getAccountNonLocked() {
-        return nonLocked;
-    }
-
-    public void setAccountNonLocked(boolean nonLocked) {
-        this.nonLocked = nonLocked;
-    }
-
-    public boolean getCredentialsNonExpired() {
-        return credentialsNonExpired;
-    }
-
-    public void setCredentialsNonExpired(boolean credentialsNonExpired) {
-        this.credentialsNonExpired = credentialsNonExpired;
-    }
-
     public boolean getEnabled() {
         return enabled;
     }
@@ -170,6 +126,14 @@ public class UserEntity {
 
     public void setPhoneNumber(String phoneNumber) {
         this.phoneNumber = phoneNumber;
+    }
+
+    public Set<AuthorityEntity> getAuthorities() {
+        return authorities;
+    }
+
+    public void setAuthorities(Set<AuthorityEntity> authorities) {
+        this.authorities = authorities;
     }
 }
 

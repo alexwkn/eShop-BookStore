@@ -21,10 +21,15 @@ public class UserDetailsServiceImplementation implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+
         User user = userDAO.findByEmail(email);
-        if (user != null) {
-            return user;
+
+        if (user == null) {
+            System.out.println("LOGIN - utilisateur introuvable");
+            throw new UsernameNotFoundException(email + "not found");
         }
-        throw new UsernameNotFoundException(email + "not found");
+
+        return user;
+
     }
 }
