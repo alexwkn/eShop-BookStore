@@ -13,4 +13,6 @@ public interface OrderRepository extends JpaRepository<OrderEntity, Integer> {
             Integer orderId,
             Integer userId
     );
+
+    Optional<OrderEntity> findFirstByUserIdAndPaidFalseOrderByOrderIdDesc(Integer userId);
 }

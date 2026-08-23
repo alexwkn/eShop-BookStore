@@ -21,7 +21,9 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 @Controller
 @RequestMapping("/orders")
@@ -50,10 +52,17 @@ public class OrderController {
     public String checkout(@AuthenticationPrincipal com.spring.henallux.firstSpringProject.model.User principal) {
         String email = principal.getEmail();
         UserEntity user = userRepository.findByEmail(email);
-        OrderEntity order = new OrderEntity();
-        order.setUserId(user.getId());
-        order.setPaid(false);
-        order = orderRepository.save(order);
+
+        OrderEntity order = orderRepository
+                .findFirstByUserIdAndPaidFalseOrderByOrderIdDesc(user.getId())
+                .orElseGet(() -> {
+                    OrderEntity newOrder = new OrderEntity();
+                    newOrder.setUserId(user.getId());
+                    newOrder.setPaid(false);
+                    return orderRepository.save(newOrder);
+                });
+
+        Set<Integer> cartProductIds = new HashSet<>();
 
         for (Map.Entry<Product, Integer> entry : cart.getItems().entrySet()) {
             Product p = entry.getKey();
@@ -62,15 +71,22 @@ public class OrderController {
             ProductEntity pEntity = productRepository.findById(p.getId())
                     .orElseThrow(() -> new IllegalStateException("Product not found: id=" + p.getId()));
 
-            OrderLineEntity line = new OrderLineEntity();
-            line.setId(new OrderLineId(order.getOrderId(), pEntity.getId()));
+            cartProductIds.add(pEntity.getId());
+
+            OrderLineId lineId = new OrderLineId(order.getOrderId(), pEntity.getId());
+            OrderLineEntity line = orderLineRepository.findById(lineId).orElseGet(OrderLineEntity::new);
+            line.setId(lineId);
             line.setQuantity(qty);
             line.setPrice(pEntity.getPrice());
 
             orderLineRepository.save(line);
         }
 
-
+        for (OrderLineEntity existingLine : orderLineRepository.findByIdOrderIdOrderByIdProductIdAsc(order.getOrderId())) {
+            if (!cartProductIds.contains(existingLine.getId().getProductId())) {
+                orderLineRepository.deleteByIdOrderIdAndIdProductId(order.getOrderId(), existingLine.getId().getProductId());
+            }
+        }
 
         return "redirect:/payement/"+ order.getOrderId();
     }
