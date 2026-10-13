@@ -42,7 +42,7 @@ Au premier démarrage, Docker :
 - génère un certificat HTTPS auto-signé ;
 - lance l'application.
 
-L'application est ensuite accessible sur **https://localhost:8082/bookstore**.
+L'application est ensuite accessible sur **https://localhost:8082** (ou **http://localhost:8080**, qui redirige automatiquement vers le HTTPS).
 
 Le certificat étant auto-signé, le navigateur affiche un avertissement : cliquer sur **Paramètres avancés**, puis **Continuer vers localhost**.
 

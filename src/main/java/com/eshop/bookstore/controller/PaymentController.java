@@ -43,8 +43,8 @@ public class PaymentController {
     private static final String PAYPAL_URL = "https://www.sandbox.paypal.com/cgi-bin/webscr";
     private static final String BUSINESS = "sb-qmx1j48304475@business.example.com";
     private static final String CLIENT_ID = "Af39HyotBOs9cX7U8kRDy9MW5JoyeBZquz4fzzjzVD5VAOyfCZCXRuG-pRHIkQHK4lbjlDYvtqYWcard";
-    private static final String RETURN_URL = "https://localhost:8082/bookstore/payement/success";
-    private static final String CANCEL_URL = "https://localhost:8082/bookstore/payement/failed";
+    private static final String RETURN_URL = "https://localhost:8082/payement/success";
+    private static final String CANCEL_URL = "https://localhost:8082/payement/failed";
     private static final String CURRENCY = "EUR";
 
     private static final String SESSION_COUPON = "appliedCoupon";
