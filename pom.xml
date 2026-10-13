@@ -11,12 +11,12 @@
 		<relativePath/>
 	</parent>
 
-	<groupId>com.spring.henallux</groupId>
-	<artifactId>firstSpringProject</artifactId>
+	<groupId>com.eshop</groupId>
+	<artifactId>bookstore</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<packaging>war</packaging>
-	<name>firstSpringProject</name>
-	<description>Demo project for Spring Boot</description>
+	<name>eShop-BookStore</name>
+	<description>Boutique en ligne de livres - Spring Boot</description>
 
 	<properties>
 		<java.version>17</java.version>

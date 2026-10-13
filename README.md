@@ -72,7 +72,7 @@ Le compte administrateur donne accès à l'éditeur de codes promo. Pour tester 
 .
 ├── DB/init.sql              # Schéma et données de test
 ├── images/                  # Images des produits
-├── src/main/java/...        # Contrôleurs, services, DAO, entités, configuration
+├── src/main/java/com/eshop/bookstore/  # Contrôleurs, services, DAO, entités, configuration
 ├── src/main/resources/      # application.yml, traductions FR/EN
 ├── src/main/webapp/         # Pages JSP, CSS, images du site
 ├── src/test/                # Tests unitaires
