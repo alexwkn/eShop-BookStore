@@ -24,4 +24,5 @@ pom.xml.*.backup
 
 ### Env / secrets ###
 .env
-
+!.env.example
+*.p12
